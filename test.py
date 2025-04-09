@@ -1,5 +1,5 @@
 import numpy as np
-from rbm import RBM
+from rbm import BRBM
 
 def generate_bars_stripes(n=4):
     patterns = []
@@ -14,7 +14,7 @@ def generate_bars_stripes(n=4):
 data = generate_bars_stripes(n=4)  # shape (32, 16)
 print(data)
 
-rbm = RBM(n_visible=16, n_hidden=8)
+rbm = BRBM(n_visible=16, n_hidden=8)
 rbm.fit(data, 100, 0.001, 1)
 
 reconstruction = [rbm.draw_visible(rbm.draw_hidden(v)) for v in data]

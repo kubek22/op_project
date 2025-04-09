@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class RBM:
+class BRBM:
     def __init__(self, n_visible, n_hidden):
         self.n_visible = n_visible
         self.n_hidden = n_hidden
@@ -69,7 +69,7 @@ class RBM:
             v[i] = np.random.binomial(1, p[i])
         return v
 
-    def contrastive_divergence(self, n, h):
+    def gibbs_sampling(self, n, h):
         for i in range(n):
             v = self.draw_visible(h)
             h = self.draw_hidden(v)
@@ -80,7 +80,7 @@ class RBM:
             # gradient descent
             for v in V:
                 h = self.draw_hidden(v)
-                v_cd, h_cd = self.contrastive_divergence(cd_n, h)
+                v_cd, h_cd = self.gibbs_sampling(cd_n, h)
 
                 W_update = learning_rate * (np.array([v]).T @ np.array([h]) - np.array([v_cd]).T @ np.array([h_cd]))
                 a_update = learning_rate * (v - v_cd)
@@ -90,3 +90,28 @@ class RBM:
                 self.b += b_update
                 self.a += a_update
         # self.Z = self.compute_Z()
+
+class GBRMB(BRBM):
+    def __init__(self, n_visible, n_hidden):
+        super().__init__(n_visible, n_hidden)
+        self.mean = None
+        self.std = None
+
+    def v_probability(self, h, x):
+        # probabilities vector for given x values
+        N = 1 / np.sqrt(2 * np.pi)
+        exp = np.exp(-0.5 * (x - self.b - self.W @ h) ** 2)
+        return N * exp
+
+    def draw_visible(self, h):
+        mean = self.b - self.W @ h
+        v = np.random.normal(loc=mean, scale=1, size=self.n_visible)
+        return v
+
+    def fit(self, V, iterations, learning_rate, cd_n=1):
+        # input matrix needs to be normalized
+        self.mean = np.mean(V, axis=0)
+        V -= self.mean
+        self.std = np.std(V, axis=0)
+        V /= self.std
+        super().fit(V, iterations, learning_rate, cd_n)
