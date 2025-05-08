@@ -50,10 +50,10 @@ class BRBM:
         return 1 / (1 + np.exp(-x))
 
     def h_probability(self, v):
-        return self.sigmoid(self.b  + v @ self.W)
+        return self.sigmoid(self.b + v @ self.W)
 
     def v_probability(self, h):
-        return self.sigmoid(self.a  + self.W @ h)
+        return self.sigmoid(self.a + self.W @ h)
 
     def draw_hidden(self, v):
         h = np.zeros(self.n_hidden)
