@@ -6,9 +6,28 @@ class RBM:
         self.n_hidden = n_hidden
         self.device = torch.device(device)
 
-        self.a = torch.zeros(self.n_visible).to(self.device)
-        self.b = torch.zeros(self.n_hidden).to(self.device)
-        self.W = torch.zeros((self.n_visible, self.n_hidden)).to(self.device)
+        self.a = torch.zeros(self.n_visible).to(self.device).double()
+        self.b = torch.zeros(self.n_hidden).to(self.device).double()
+        self.W = torch.zeros((self.n_visible, self.n_hidden)).to(self.device).double()
+
+    def state_dict(self):
+        state_dict = {
+            "n_visible": self.n_visible,
+            "n_hidden": self.n_hidden,
+            "device": self.device,
+            "a": self.a,
+            "b": self.b,
+            "W": self.W
+        }
+        return state_dict
+
+    def load_state_dict(self, state_dict):
+        self.n_visible = state_dict["n_visible"]
+        self.n_hidden = state_dict["n_hidden"]
+        self.device = state_dict["device"]
+        self.a = state_dict["a"]
+        self.b = state_dict["b"]
+        self.W = state_dict["W"]
 
     def to(self, device):
         self.device = device
@@ -45,26 +64,7 @@ class RBM:
             h = self.draw_hidden(v)
         return v, h
 
-    # TODO exchange fit method
-    def fit(self, V, iterations, learning_rate, cd_n=1, verbose=False):
-        for i in range(iterations):
-            if verbose:
-                print(f"Iteration: {i+1} of {iterations}")
-            # gradient descent
-            for v in V:
-                v = v.to(self.device)
-                h = self.draw_hidden(v)
-                v_cd, h_cd = self.gibbs_sampling(cd_n, h)
-
-                W_update = learning_rate * torch.outer(v, h) - torch.outer(v_cd, h_cd)
-                a_update = learning_rate * (v - v_cd)
-                b_update = learning_rate * (h - h_cd)
-
-                self.W += W_update
-                self.b += b_update
-                self.a += a_update
-
-    def fit_batch(self, V, iterations, learning_rate, cd_n=1, batch_size=64, verbose=False):
+    def fit(self, V, iterations, learning_rate, cd_n=1, batch_size=64, verbose=False):
         dataset = torch.utils.data.TensorDataset(V)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
