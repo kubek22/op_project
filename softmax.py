@@ -4,9 +4,9 @@ import torch
 import math
 
 class Net(nn.Module):
-    def __init__(self, input, output):
+    def __init__(self, input, output=2):
         super().__init__()
-        self.soft = nn.Softmax(input, output)
+        self.soft = nn.Linear(input, output)
 
     def forward(self, x):
         x = self.soft(x)
